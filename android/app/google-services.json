@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "438722206001",
+    "firebase_url": "https://webtest-a5678.firebaseio.com",
+    "project_id": "webtest-a5678",
+    "storage_bucket": "webtest-a5678.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438722206001:android:65891cf401a23c7a797810",
+        "android_client_info": {
+          "package_name": "application.satasat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACK0f6xb5T6SpPAVHF_gg_jqeDZvfRGuw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438722206001:android:7435bb584be6de3a797810",
+        "android_client_info": {
+          "package_name": "com.example.foodorderingsys"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACK0f6xb5T6SpPAVHF_gg_jqeDZvfRGuw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438722206001:android:d9d42b526b5ae937797810",
+        "android_client_info": {
+          "package_name": "io.fireship.lessonapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACK0f6xb5T6SpPAVHF_gg_jqeDZvfRGuw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
