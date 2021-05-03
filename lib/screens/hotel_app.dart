@@ -34,7 +34,6 @@ class _hotel_homeState extends State<hotel_home> {
   void initState() {
     t = Timer.periodic(new Duration(seconds: 1), (timer) {});
     Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
     super.initState();
   }
 
