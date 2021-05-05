@@ -135,7 +135,8 @@ class UserProvider with ChangeNotifier {
         "price": product.price,
         "quantity": quantity,
         "cooktime": product.time,
-        "inittime": 0
+        "inittime": 0,
+        "url": product.image
       };
 
       CartItemModel item = CartItemModel.fromMap(cartItem);

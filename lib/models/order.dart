@@ -14,6 +14,7 @@ class OrderModel {
   static const URL = "url";
   static const SHOW = "show";
   static const TIME = "time";
+  static const INITTIME = "inittime";
   String _id;
   String _restaurantId;
   String _description;
@@ -24,6 +25,7 @@ class OrderModel {
   int _paid;
   String _url;
   int _show;
+  int _init;
   Timestamp _time;
   GeoPoint _location;
 //  getters
@@ -35,6 +37,7 @@ class OrderModel {
   int get total => _total;
   int get createdAt => _createdAt;
   int get paid => _paid;
+  int get inittime => _init;
   String get url => _url;
   int get show => _show;
   Timestamp get time => _time;
@@ -55,6 +58,7 @@ class OrderModel {
     _createdAt = snapshot.data[CREATED_AT];
     _url = snapshot.data[URL];
     _show = snapshot.data[SHOW];
+    _init = snapshot.data[INITTIME];
     _time = snapshot.data[TIME];
     cart = _convertOrderedItems(snapshot.data[CART]) ?? [];
   }

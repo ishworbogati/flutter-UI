@@ -15,6 +15,7 @@ import 'package:foodorderingsys/providers/product.dart';
 import 'package:foodorderingsys/providers/user.dart';
 import 'package:foodorderingsys/screens/popular_dishes.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_star_rating/smooth_star_rating.dart';
@@ -898,17 +899,18 @@ class _MaterialTileState extends State<MaterialTile> {
                     itemCount: widget.order.cart.length,
                     itemBuilder: (context, index) {
                       var w = widget.order.cart[index].cooktime * 60000;
+                      var format = new DateFormat('HH:mm a');
 
-                      print(time);
+                      print(time - widget.order.inittime);
                       bool completestat =
-                          ((time - widget.order.cart[index].inittime) / w) <
-                                  0.99
+                          ((time - widget.order.inittime) / w) < 0.99
                               ? true
                               : false;
                       return Card(
                         child: Badge(
-                          showBadge: true
-                          /*widget.initialtime == 0 ? false : !completestat */,
+                          showBadge: widget.order.inittime == 0
+                              ? false
+                              : !completestat,
                           badgeContent: Icon(
                             Icons.check,
                             size: 10,
@@ -950,12 +952,14 @@ class _MaterialTileState extends State<MaterialTile> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      /*  Center(
+                                      Center(
                                         child: Text(
-                                          (format.format(date)).toString(),
+                                          (format.format(
+                                                  widget.order.time.toDate()))
+                                              .toString(),
                                           style: TextStyle(fontSize: 9),
                                         ),
-                                      ),*/
+                                      ),
                                       Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -1058,16 +1062,13 @@ class _MaterialTileState extends State<MaterialTile> {
                                             addAutomaticKeepAlive: true,
                                             curve: Curves.easeIn,
                                             percent: ((time -
-                                                            (widget
-                                                                .order
-                                                                .cart[index]
+                                                            (widget.order
                                                                 .inittime)) /
                                                         w) <
                                                     0
                                                 ? 0.0
                                                 : ((time -
-                                                        widget.order.cart[index]
-                                                            .inittime) /
+                                                        widget.order.inittime) /
                                                     w),
                                             center: ClipRRect(
                                               borderRadius:
@@ -1100,15 +1101,9 @@ class _MaterialTileState extends State<MaterialTile> {
                                   ),
                                   trailing: Container(
                                       padding: EdgeInsets.only(top: 10),
-                                      child: widget
-                                                  .order.cart[index].inittime ==
-                                              0
+                                      child: widget.order.inittime == 0
                                           ? Text("${"Queuing"}")
-                                          : ((time -
-                                                          widget
-                                                              .order
-                                                              .cart[index]
-                                                              .inittime) /
+                                          : ((time - widget.order.inittime) /
                                                       w) <
                                                   0.1
                                               ? Column(

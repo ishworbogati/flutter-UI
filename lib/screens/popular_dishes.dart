@@ -165,7 +165,7 @@ class _PopularFoodTileState extends State<PopularFoodTile>
 
     buildCollapsed2() {
       return Banner(
-        message: "10 %",
+        message: "${widget.product.dis}%",
         location: BannerLocation.topEnd,
         child: Container(
           padding: EdgeInsets.only(left: 15),
@@ -183,7 +183,7 @@ class _PopularFoodTileState extends State<PopularFoodTile>
                       height: 130,
                       width: MediaQuery.of(context).size.width,
                       child: CachedNetworkImage(
-                          imageUrl: "",
+                          imageUrl: widget.product.image,
                           imageBuilder: (context, imageProvider) => Container(
                               width: MediaQuery.of(context).size.width,
                               decoration: BoxDecoration(
@@ -284,7 +284,7 @@ class _PopularFoodTileState extends State<PopularFoodTile>
                     height: 80,
                     width: 150,
                     child: CachedNetworkImage(
-                        imageUrl: "",
+                        imageUrl: widget.product.image,
                         imageBuilder: (context, imageProvider) => Container(
                                 decoration: BoxDecoration(
                               image: DecorationImage(
@@ -329,7 +329,7 @@ class _PopularFoodTileState extends State<PopularFoodTile>
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Flexible(
-                      child: Text(widget.product.description,
+                      child: Text(widget.product.ingrediants,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.left),
                     )
@@ -543,25 +543,6 @@ showpopUp(context, product) {
                                           print("Item NOT added to cart");
                                         }
                                         print("lOADING SET TO FALSE");
-
-                                        /*  isCircle = true;
-                                              fooditemcart fc = fooditemcart(
-                                                  itemid,
-                                                  name,
-                                                  type,
-                                                  _quantity,
-                                                  cost,
-                                                  0,
-                                                  ctime,
-                                                  url);
-                                              cart.addItem(fc);
-                                              showToast(context, "Food added",
-                                                  name, true);
-                                              Navigator.of(context).pop();
-                                              setState(() {
-                                                _quantity = 1;
-                                                _rating = _rating;
-                                              });*/
                                       },
                                       backgroundColor: AppTheme.white,
                                       child: Icon(Icons.local_grocery_store,
@@ -609,7 +590,7 @@ showpopUp(context, product) {
                           width: 150,
                           height: 150,
                           child: CachedNetworkImage(
-                            imageUrl: "url",
+                            imageUrl: "null",
                             fit: BoxFit.fill,
                           )),
                     ),

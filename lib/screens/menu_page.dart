@@ -301,6 +301,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
                         paid: 0,
                         userId: user.user.uid,
                         id: id,
+                        inittime: 0,
                         description: "Some random description",
                         status: "pending",
                         totalPrice: user.userModel.totalCartPrice,
@@ -550,7 +551,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
               scrollDirection: Axis.horizontal,
               itemCount: productProvider.allProducts.length,
               itemBuilder: (context, index) {
-                if ((productProvider.allProducts[index].name.toString()) ==
+                if ((productProvider.allProducts[index].category.toString()) ==
                     item) {
                   return Container(
                     height: 150,
@@ -622,7 +623,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
               scrollDirection: Axis.horizontal,
               itemCount: productProvider.allProducts.length,
               itemBuilder: (context, index) {
-                if (productProvider.allProducts[index].rates >= 5) {
+                if (productProvider.allProducts[index].orderedno >= 5) {
                   return Container(
                     height: 150,
                     width: MediaQuery.of(context).size.width,

@@ -16,6 +16,7 @@ class OrderServices {
       Timestamp time,
       GeoPoint location,
       int show,
+      int inittime,
       int totalPrice}) {
     List<Map> convertedCart = [];
 
@@ -35,6 +36,7 @@ class OrderServices {
       "time": time,
       "location": location,
       "show": show,
+      "inittime": inittime
     });
   }
 
