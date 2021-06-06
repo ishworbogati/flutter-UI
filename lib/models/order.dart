@@ -14,7 +14,9 @@ class OrderModel {
   static const URL = "url";
   static const SHOW = "show";
   static const TIME = "time";
+  static const DATE = "date";
   static const INITTIME = "inittime";
+
   String _id;
   String _restaurantId;
   String _description;
@@ -24,6 +26,7 @@ class OrderModel {
   int _total;
   int _paid;
   String _url;
+  String _date;
   int _show;
   int _init;
   Timestamp _time;
@@ -39,6 +42,7 @@ class OrderModel {
   int get paid => _paid;
   int get inittime => _init;
   String get url => _url;
+  String get date => _date;
   int get show => _show;
   Timestamp get time => _time;
   GeoPoint get location => _location;
@@ -46,21 +50,21 @@ class OrderModel {
   // public variable
   List<CartItemModel> cart;
 
-  OrderModel.fromSnapshot(DocumentSnapshot snapshot) {
-    // print(snapshot.data[CART]);
-
-    _id = snapshot.data[ID];
-    _description = snapshot.data[DESCRIPTION];
-    _total = snapshot.data[TOTAL];
-    _paid = snapshot.data[PAID];
-    _status = snapshot.data[STATUS];
-    _userId = snapshot.data[USER_ID];
-    _createdAt = snapshot.data[CREATED_AT];
-    _url = snapshot.data[URL];
-    _show = snapshot.data[SHOW];
-    _init = snapshot.data[INITTIME];
-    _time = snapshot.data[TIME];
-    cart = _convertOrderedItems(snapshot.data[CART]) ?? [];
+  OrderModel.fromSnapshot(snapshot) {
+    _id = snapshot.data()[ID];
+    _description = snapshot.data()[DESCRIPTION];
+    _total = snapshot.data()[TOTAL];
+    _paid = snapshot.data()[PAID];
+    _status = snapshot.data()[STATUS];
+    _userId = snapshot.data()[USER_ID];
+    _createdAt = snapshot.data()[CREATED_AT];
+    _url = snapshot.data()[URL];
+    _show = snapshot.data()[SHOW];
+    _init = snapshot.data()[INITTIME];
+    _time = snapshot.data()[TIME];
+    _date = snapshot.data()[DATE];
+    _location = snapshot.data()[LOCATION];
+    cart = _convertOrderedItems(snapshot.data()[CART]) ?? [];
   }
 
   List<CartItemModel> _convertOrderedItems(List cart) {

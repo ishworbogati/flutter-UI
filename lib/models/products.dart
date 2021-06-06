@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ProductModel {
   static const FOODID = "FOODID";
   static const FOODNAME = "FOODNAME";
@@ -11,6 +9,7 @@ class ProductModel {
   static const DESCRIPTION = "DESCRIPTION";
   static const INGREDIANTS = "INGREDIANTS";
   static const CATEGORY = "CATEGORY";
+  static const CALORIES = "CALORIES";
   static const FEATURED = "FEATURED";
   static const RATES = "RATINGNO";
   static const ORDEREDNO = "ORDEREDNO";
@@ -29,6 +28,7 @@ class ProductModel {
   int _discount;
   int _time;
   int _orderedno;
+  int _calories;
 
   bool _featured;
 
@@ -37,6 +37,7 @@ class ProductModel {
   String get name => _name;
 
   String get category => _category;
+  int get calories => _calories;
 
   String get description => _description;
 
@@ -58,19 +59,20 @@ class ProductModel {
   // public variable
   bool liked = false;
 
-  ProductModel.fromSnapshot(DocumentSnapshot snapshot) {
-    _id = snapshot.data[FOODID];
-    _image = snapshot.data[IMAGE];
-    _description = snapshot.data[DESCRIPTION];
-    _ingrediants = snapshot.data[INGREDIANTS];
-    _featured = snapshot.data[FEATURED];
-    _price = snapshot.data[COST].floor();
-    _category = snapshot.data[CATEGORY];
-    _rating = snapshot.data[RATING];
-    _orderedno = snapshot.data[ORDEREDNO];
-    _rates = snapshot.data[RATES];
-    _discount = snapshot.data[discount];
-    _time = snapshot.data[TIME];
-    _name = snapshot.data[FOODNAME];
+  ProductModel.fromSnapshot(snapshot) {
+    _id = snapshot.data()[FOODNAME];
+    _image = snapshot.data()[IMAGE];
+    _description = snapshot.data()[DESCRIPTION];
+    _ingrediants = snapshot.data()[INGREDIANTS];
+    _featured = snapshot.data()[FEATURED];
+    _price = snapshot.data()[COST].floor();
+    _category = snapshot.data()[CATEGORY];
+    _calories = snapshot.data()[CALORIES];
+    _rating = snapshot.data()[RATING];
+    _orderedno = snapshot.data()[ORDEREDNO];
+    _rates = snapshot.data()[RATES];
+    _discount = snapshot.data()[discount];
+    _time = snapshot.data()[TIME];
+    _name = snapshot.data()[FOODNAME];
   }
 }

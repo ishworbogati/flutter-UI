@@ -1,54 +1,50 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:foodorderingsys/Cart/cartBody.dart';
 import 'package:foodorderingsys/helpers/AppTheme.dart';
-import 'package:foodorderingsys/helpers/order.dart';
+import 'package:foodorderingsys/helpers/ad.dart';
 import 'package:foodorderingsys/helpers/screen_navigation.dart';
 import 'package:foodorderingsys/helpers/style.dart';
-import 'package:foodorderingsys/models/cart_item.dart';
 import 'package:foodorderingsys/providers/app.dart';
 import 'package:foodorderingsys/providers/product.dart';
 import 'package:foodorderingsys/providers/user.dart';
-import 'package:foodorderingsys/screens/details.dart';
-import 'package:foodorderingsys/screens/login.dart';
+import 'package:foodorderingsys/screens/menuTab.dart';
 import 'package:foodorderingsys/screens/popular_dishes.dart';
 import 'package:foodorderingsys/screens/product_search.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:foodorderingsys/screens/profile.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:toast/toast.dart';
-import 'package:uuid/uuid.dart';
 
 class menu extends StatefulWidget {
   @override
   _menuState createState() => _menuState();
 }
 
-class _menuState extends State<menu> with SingleTickerProviderStateMixin {
+class _menuState extends State<menu> with TickerProviderStateMixin {
   final f = new DateTime.now();
   ScrollController scrollController;
+
   bool isCircle = false;
   List queryResultSet = [];
   List tempSearchStore = [];
   bool viewmore = false;
   final _key = GlobalKey<ScaffoldState>();
-  OrderServices _orderServices = OrderServices();
   var format = new DateFormat('HH:mm a');
   AnimationController controller;
   Animation<double> scaleAnimation;
-
-  Future<Position> locateUser() async {
-    return Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-  }
+  var searchcontroller = new TextEditingController();
+  bool isSwitched = false;
+  bool isliked;
+  AppProvider themeChangeProvider = new AppProvider();
 
   @override
   void initState() {
-    FocusManager.instance.primaryFocus.unfocus();
     controller =
         AnimationController(vsync: this, duration: Duration(milliseconds: 450));
     scaleAnimation =
@@ -60,9 +56,8 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context, listen: false);
-    final productProvider =
-        Provider.of<ProductProvider>(context, listen: false);
+    final user = Provider.of<UserProvider>(context);
+    final productProvider = Provider.of<ProductProvider>(context);
     return Scaffold(
       key: _key,
       floatingActionButton:
@@ -72,194 +67,148 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
       }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: Container(
-        padding: EdgeInsets.only(left: 10, right: 10),
+        //padding: EdgeInsets.only(left: 5, right: 5),
         color: AppTheme.notWhite,
         height: MediaQuery.of(context).size.height,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.050,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    format.format(DateTime.now()).toString(),
-                    style: AppTheme.subtitle,
-                  ),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(110),
-                    child: InkWell(
-                      onTap: () {
-                        user.signOut();
-                        changeScreenReplacement(context, LoginScreen());
-                      },
-                      child: Container(
-                          width: 30,
-                          height: 30,
-                          child: CachedNetworkImage(
-                            imageUrl: "",
-                            fit: BoxFit.cover,
-                            height: 30,
-                            width: 30,
-                          )),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                child: Text(
-                  "What would you like to have?",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                ),
-              ),
-              Container(
-                  margin: EdgeInsets.only(top: 10),
-                  height: 45,
-                  width: MediaQuery.of(context).size.width - 20,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: new BorderRadius.all(Radius.circular(25)),
-                    border: Border.all(
-                        width: 1, color: AppTheme.nearlyBlack.withOpacity(0.2)),
-                  ),
-                  child: TextField(
-                    textInputAction: TextInputAction.search,
-                    style: new TextStyle(
-                      color: Colors.black,
-                    ),
-                    onSubmitted: (pattern) async {
-                      final app =
-                          Provider.of<AppProvider>(context, listen: false);
-                      app.changeLoading();
-                      await productProvider.search(productName: pattern);
-                      changeScreen(context, ProductSearchScreen());
-
-                      app.changeLoading();
-                    },
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      prefixIcon: Icon(Icons.search, color: Colors.black38),
-                      hintText: "Search food items",
-                      hintStyle: new TextStyle(color: Colors.black38),
-                    ),
-                  )),
-              headerTopCategories(productProvider),
-              AnimatedOpacity(
-                  opacity: viewmore ? 1 : 0,
-                  curve: Curves.easeInOut,
-                  duration: Duration(milliseconds: 500),
-                  child: viewmore
-                      ? Container(child: viewMoreCategories())
-                      : Container()),
-              Container(
-                padding: EdgeInsets.only(top: 12, bottom: 10),
-                child: Text(
-                  "Featured Items",
-                  style: AppTheme.title,
-                ),
-              ),
-              PopularDishes(),
-              SizedBox(
-                height: 500,
-                child: DefaultTabController(
-                    length: 7,
-                    child: Scaffold(
-                      appBar: AppBar(
-                        primary: false,
-                        automaticallyImplyLeading: false,
-                        title: Padding(
-                          padding: const EdgeInsets.only(bottom: 0.0),
-                          child: Text(
-                            "Full Menu",
-                            style: AppTheme.title,
+              Card(
+                elevation: 1,
+                child: Container(
+                  color: AppTheme.notWhite.withOpacity(0.1),
+                  height: MediaQuery.of(context).size.height * 0.24,
+                  padding: EdgeInsets.only(right: 15, left: 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.02,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            format.format(DateTime.now()).toString(),
+                            style: AppTheme.subtitle,
                           ),
-                        ),
-                        backgroundColor: Colors.white,
-                        elevation: 1,
-                        bottom: PreferredSize(
-                            child: Container(
-                              color: Colors.white,
-                              height: 1.0,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(110),
+                            child: InkWell(
+                              onTap: () {
+                                changeScreenReplacement(context, profile());
+                              },
+                              child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  child: CachedNetworkImage(
+                                    imageUrl: user.userModel.url,
+                                    fit: BoxFit.cover,
+                                    height: 30,
+                                    width: 30,
+                                  )),
                             ),
-                            preferredSize: Size.fromHeight(20.0)),
-                        flexibleSpace: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0),
-                              child: TabBar(
-                                  isScrollable: true,
-                                  unselectedLabelColor: AppTheme.darkText,
-                                  indicatorSize: TabBarIndicatorSize.tab,
-                                  indicator: BoxDecoration(
-                                      gradient: LinearGradient(colors: [
-                                        AppTheme.darkerText,
-                                        AppTheme.grey
-                                      ]),
-                                      borderRadius: BorderRadius.circular(15),
-                                      color: AppTheme.darkText),
-                                  tabs: [
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Popular"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Salad"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Meal"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Desert"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Soup"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Chicken"),
-                                      ),
-                                    ),
-                                    Tab(
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Text("Vegetrian"),
-                                      ),
-                                    ),
-                                  ]),
-                            )
-                          ],
+                          ),
+                        ],
+                      ), //First Row
+                      Container(
+                        height: 30,
+                        child: Text(
+                          "What would you like to have?",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w800),
                         ),
                       ),
-                      body: TabBarView(children: [
-                        popularfooditems("popular", productProvider),
-                        fooditems("salad", productProvider),
-                        fooditems("meal", productProvider),
-                        fooditems("desert", productProvider),
-                        fooditems("soup", productProvider),
-                        fooditems("chicken", productProvider),
-                        fooditems("veg", productProvider),
-                      ]),
-                    )),
+                      Container(
+                          margin: EdgeInsets.only(top: 10),
+                          height: 50,
+                          width: MediaQuery.of(context).size.width - 20,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.rectangle,
+                            borderRadius:
+                                new BorderRadius.all(Radius.circular(25)),
+                            border: Border.all(
+                                width: 1,
+                                color: AppTheme.nearlyBlack.withOpacity(0.2)),
+                          ),
+                          child: TextField(
+                            textInputAction: TextInputAction.search,
+                            style: new TextStyle(
+                              color: Colors.black,
+                            ),
+                            readOnly: true,
+                            onTap: () {
+                              changeScreen(context, ProductSearchScreen());
+                            },
+                            decoration: InputDecoration(
+                                border: InputBorder.none,
+                                suffixIcon: Icon(Icons.fastfood_rounded,
+                                    color: Colors.black26),
+                                prefixIcon:
+                                    Icon(Icons.search, color: Colors.black38),
+                                hintText: "Search food items",
+                                hintStyle: new TextStyle(
+                                    fontSize: 16, color: Colors.black38),
+                                contentPadding: EdgeInsets.only(top: 17)),
+                          )), //Search
+                    ],
+                  ),
+                ),
+              ), //Top section
+              headerTopCategories(productProvider),
+              /*      AnimatedOpacity(
+                    opacity: viewmore ? 1 : 0,
+                    curve: Curves.easeInOut,
+                    duration: Duration(milliseconds: 500),
+                    child: viewmore
+                        ? Container(
+                            padding:
+                                EdgeInsets.only(left: 15, right: 10, bottom: 25),
+                            child: viewMoreCategories(productProvider))
+                        : Container()),*/
+              Container(
+                padding: EdgeInsets.only(bottom: 20),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 0.5,
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      color: Colors.grey.shade400,
+                    ),
+                    adhelper(),
+                    Container(
+                      width: double.infinity,
+                      height: 0.5,
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      color: Colors.grey.shade400,
+                    ),
+                  ],
+                ),
+              ), //ad
+
+              Container(
+                color: AppTheme.notWhite,
+                height: 300,
+                padding: EdgeInsets.only(left: 15, right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Featured Items",
+                      style: AppTheme.title,
+                    ),
+                    PopularDishes(),
+                  ],
+                ),
+              ), // featured items
+              Container(
+                height: 400,
+                child: buildDefaultTabController(productProvider),
               ),
             ],
           ),
@@ -269,198 +218,224 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  StatelessWidget cartFunctionMethod(user, BuildContext context) {
-    return ((user.userModel.cart.length > 0))
-        ? FloatingActionButton.extended(
-            onPressed: () {
-              AwesomeDialog(
-                context: context,
-                padding: EdgeInsets.only(top: 2),
-                headerAnimationLoop: false,
-                customHeader: Icon(
-                  Icons.shopping_cart,
-                  color: AppTheme.dark_grey,
-                  size: 50,
+  DefaultTabController buildDefaultTabController(
+      ProductProvider productProvider) {
+    return DefaultTabController(
+        length: 7,
+        child: Scaffold(
+          appBar: AppBar(
+            primary: false,
+            automaticallyImplyLeading: false,
+            title: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 0.0),
+                  child: Text(
+                    "Full Menu",
+                    style: AppTheme.title,
+                  ),
                 ),
-                dialogType: DialogType.INFO,
-                animType: AnimType.BOTTOMSLIDE,
-                body: cartBody(user),
-                tittle: "Orders",
-                btnOk: FloatingActionButton(
-                  onPressed: () async {
-                    var uuid = Uuid();
-                    String id = uuid.v4();
-                    Position position = await Geolocator().getCurrentPosition(
-                        desiredAccuracy: LocationAccuracy.high);
-                    Timestamp timeKEy = Timestamp.now();
-                    _orderServices.createOrder(
-                        location:
-                            GeoPoint(position.latitude, position.longitude),
-                        time: timeKEy,
-                        show: 1,
-                        paid: 0,
-                        userId: user.user.uid,
-                        id: id,
-                        inittime: 0,
-                        description: "Some random description",
-                        status: "pending",
-                        totalPrice: user.userModel.totalCartPrice,
-                        cart: user.userModel.cart);
-                    for (CartItemModel cartItem in user.userModel.cart) {
-                      bool value =
-                          await user.removeFromCart(cartItem: cartItem);
-                      if (value) {
-                        user.reloadUserModel();
-                        _key.currentState.showSnackBar(
-                            SnackBar(content: Text("Clearing Cart!")));
-                      } else {
-                        print("ITEM WAS NOT REMOVED");
-                      }
-                    }
-                    _key.currentState.showSnackBar(
-                        SnackBar(content: Text("Order created!")));
-                    Navigator.pop(context);
-                  },
-                  backgroundColor: AppTheme.dark_grey,
-                  child: Text("Send"),
+                Spacer(),
+                Container(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      isSwitched
+                          ? Text(
+                              "Veg",
+                              style: AppTheme.subtitle,
+                            )
+                          : Text(
+                              "Mix",
+                              style: AppTheme.subtitle,
+                            ),
+                      Switch(
+                        value: isSwitched,
+                        onChanged: (value) {
+                          setState(() {
+                            isSwitched = value;
+                          });
+                        },
+                        activeTrackColor:
+                            !isSwitched ? Colors.white60 : Colors.green,
+                        activeColor: Colors.white,
+                      ),
+                    ],
+                  ),
                 ),
-                btnCancel: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  backgroundColor: AppTheme.dark_grey,
-                  child: Text("Close"),
-                ),
-                desc: 'The operation was successfully completed.',
-              ).show();
-            },
-            label:
-                Text("order (" + user.userModel.cart.length.toString() + ")"),
-            icon: Icon(Icons.fastfood),
-            elevation: 6,
-            backgroundColor: AppTheme.dark_grey,
-          )
-        : new Container();
-  }
-
-  Widget buildReturn(data) {
-    return Container(
-        color: AppTheme.white,
-        child: ListTile(
-          onTap: () {
-            FocusManager.instance.primaryFocus.unfocus();
-            FocusScope.of(context).requestFocus(FocusNode());
-            FocusScope.of(context).unfocus();
-
-            //showItemDetails(context, data);
-          },
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(110),
-            child: Container(
-                width: 20,
-                height: 20,
-                child: CachedNetworkImage(
-                  imageUrl: data["url"],
-                  fit: BoxFit.cover,
-                  height: 20,
-                  width: 20,
-                )),
-          ),
-          trailing: IconButton(
-            icon: Icon(
-              Icons.add_box,
-              color: AppTheme.darkerText,
+              ],
             ),
-            onPressed: () {
-              /* showpopUp(
-                  context,
-                  data["url"],
-                  _quantity,
-                  data["foodname"],
-                  data["foodtype"],
-                  rating,
-                  data["cost"],
-                  data["foodname"],
-                  data["duration"]);*/
-            },
+            backgroundColor: Colors.white,
+            elevation: 1,
+            bottom: PreferredSize(
+                child: Container(
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+                preferredSize: Size.fromHeight(20.0)),
+            flexibleSpace: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 15.0),
+                  child: TabBar(
+                      isScrollable: true,
+                      unselectedLabelColor: AppTheme.darkText,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: AppTheme.notWhite,
+                      indicator: BoxDecoration(
+                          gradient: LinearGradient(
+                              colors: [AppTheme.darkerText, AppTheme.grey]),
+                          borderRadius: BorderRadius.circular(15),
+                          color: AppTheme.darkText),
+                      tabs: [
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Popular"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Salad"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Meal"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Desert"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Soup"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Chicken"),
+                          ),
+                        ),
+                        Tab(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text("Vegetrian"),
+                          ),
+                        ),
+                      ]),
+                )
+              ],
+            ),
           ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                data["foodname"].toString(),
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                "\$ " + data["cost"].toString(),
-                style: TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
+          body: TabBarView(children: [
+            menuTab(scaleAnimation: scaleAnimation),
+            menuTab(scaleAnimation: scaleAnimation, item: "salad"),
+            menuTab(scaleAnimation: scaleAnimation, item: "meal"),
+            menuTab(scaleAnimation: scaleAnimation, item: "desert"),
+            menuTab(scaleAnimation: scaleAnimation, item: "soup"),
+            menuTab(scaleAnimation: scaleAnimation, item: "chicken"),
+            menuTab(scaleAnimation: scaleAnimation, item: "veg"),
+          ]),
         ));
   }
 
+  StatelessWidget cartFunctionMethod(user, BuildContext context) {
+    if (user.userModel.cart.isNotEmpty) {
+      return ((user.userModel.cart.length > 0))
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                changeScreen(context, CartScreen());
+              },
+              label:
+                  Text("order (" + user.userModel.cart.length.toString() + ")"),
+              icon: Icon(Icons.fastfood),
+              elevation: 6,
+              backgroundColor: AppTheme.dark_grey,
+            )
+          : new Container();
+    } else {
+      return Container();
+    }
+  }
+
   Widget headerTopCategories(productProvider) {
-    final app = Provider.of<AppProvider>(context, listen: false);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        sectionHeader('All Categories', onViewMore: () {
-          setState(() {
-            viewmore = !viewmore;
-          });
-        }),
-        SizedBox(
-          height: 90,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            shrinkWrap: true,
-            children: <Widget>[
-              headerCategoryItem('Frieds', FlutterIcons.food_fork_drink_mco,
-                  onPressed: () async {
-                app.changeLoading();
-                await productProvider.search(productName: "salad");
-                changeScreen(context, ProductSearchScreen());
-                app.changeLoading();
-              }),
-              headerCategoryItem('Fast Food', Icons.local_dining,
-                  onPressed: () async {
-                app.changeLoading();
-                await productProvider.search(productName: "salad");
-                changeScreen(context, ProductSearchScreen());
-                app.changeLoading();
-              }),
-              headerCategoryItem('Creamery', Icons.offline_bolt,
-                  onPressed: () async {
-                app.changeLoading();
-                await productProvider.search(productName: "salad");
-                changeScreen(context, ProductSearchScreen());
-                app.changeLoading();
-              }),
-              headerCategoryItem('Hot Drinks', Icons.local_cafe,
-                  onPressed: () async {
-                app.changeLoading();
-                await productProvider.search(productName: "salad");
-                changeScreen(context, ProductSearchScreen());
-                app.changeLoading();
-              }),
-              headerCategoryItem('Vegetables', Icons.local_florist,
-                  onPressed: () async {
-                app.changeLoading();
-                await productProvider.search(productName: "salad");
-                changeScreen(context, ProductSearchScreen());
-                app.changeLoading();
-              }),
-            ],
-          ),
-        )
-      ],
+    return Container(
+      height: 170,
+      padding: EdgeInsets.only(left: 15, right: 15),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          sectionHeader('All Categories', onViewMore: () {
+            setState(() {
+              viewmore = !viewmore;
+            });
+          }),
+          LimitedBox(
+            maxHeight: 100,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              children: <Widget>[
+                headerCategoryItem('Frieds', FlutterIcons.food_fork_drink_mco,
+                    onPressed: () async {
+                  changeScreen(
+                      context,
+                      ProductSearchScreen(
+                        text: "fried",
+                      ));
+                }),
+                headerCategoryItem('Fast Food', Icons.local_dining,
+                    onPressed: () async {
+                  changeScreen(
+                      context,
+                      ProductSearchScreen(
+                        text: "fried",
+                      ));
+                }),
+                headerCategoryItem('Creamery', Icons.offline_bolt,
+                    onPressed: () async {
+                  changeScreen(
+                      context,
+                      ProductSearchScreen(
+                        text: "fried",
+                      ));
+                }),
+                headerCategoryItem('Hot Drinks', Icons.local_cafe,
+                    onPressed: () async {
+                  changeScreen(
+                      context,
+                      ProductSearchScreen(
+                        text: "fried",
+                      ));
+                }),
+                headerCategoryItem('Vegetables', Icons.local_florist,
+                    onPressed: () async {
+                  changeScreen(
+                      context,
+                      ProductSearchScreen(
+                        text: "fried",
+                      ));
+                }),
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
-  Widget viewMoreCategories() {
+  Widget viewMoreCategories(productProvider) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -471,21 +446,24 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
             scrollDirection: Axis.horizontal,
             shrinkWrap: true,
             children: <Widget>[
-              headerCategoryItem('Chinese', Icons.people, onPressed: () {
-                showItemspopUp(context, "salad");
+              headerCategoryItem('Chinese', Icons.people, onPressed: () async {
+                changeScreen(context, ProductSearchScreen());
               }),
-              headerCategoryItem('Mexican', Icons.local_dining, onPressed: () {
-                showItemspopUp(context, "salad");
+              headerCategoryItem('Mexican', Icons.local_dining,
+                  onPressed: () async {
+                changeScreen(context, ProductSearchScreen());
               }),
-              headerCategoryItem('Spanish', Icons.offline_bolt, onPressed: () {
-                showItemspopUp(context, "salad");
+              headerCategoryItem('Spanish', Icons.offline_bolt,
+                  onPressed: () async {
+                changeScreen(context, ProductSearchScreen());
               }),
               headerCategoryItem('Japanese', Icons.local_grocery_store,
-                  onPressed: () {
-                showItemspopUp(context, "salad");
+                  onPressed: () async {
+                changeScreen(context, ProductSearchScreen());
               }),
-              headerCategoryItem('American', Icons.local_drink, onPressed: () {
-                showItemspopUp(context, "salad");
+              headerCategoryItem('American', Icons.local_drink,
+                  onPressed: () async {
+                changeScreen(context, ProductSearchScreen());
               }),
             ],
           ),
@@ -518,7 +496,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
 
   Widget headerCategoryItem(String name, IconData icon, {onPressed}) {
     return Container(
-      margin: EdgeInsets.only(right: 15),
+      margin: EdgeInsets.only(right: 18),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -532,7 +510,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
                 heroTag: name,
                 onPressed: onPressed,
                 backgroundColor: AppTheme.white,
-                child: Icon(icon, size: 35, color: Colors.black87),
+                child: Icon(icon, size: 20, color: Colors.black87),
               )),
           Text(name + ' ›', style: AppTheme.subtitle)
         ],
@@ -540,158 +518,7 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget fooditems(item, productProvider) {
-    return ScaleTransition(
-      scale: scaleAnimation,
-      child: Container(
-        height: 130,
-        child: Container(
-          height: 100,
-          child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: productProvider.allProducts.length,
-              itemBuilder: (context, index) {
-                if ((productProvider.allProducts[index].category.toString()) ==
-                    item) {
-                  return Container(
-                    height: 150,
-                    width: MediaQuery.of(context).size.width,
-                    child: ListTile(
-                      onTap: () {
-                        //showItemDetails(context, document);
-                      },
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(110),
-                        child: Container(
-                            width: 20,
-                            height: 20,
-                            child: CachedNetworkImage(
-                              imageUrl: "",
-                              fit: BoxFit.cover,
-                              height: 20,
-                              width: 20,
-                            )),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.add_box,
-                          size: 20,
-                          color: AppTheme.darkerText,
-                        ),
-                        onPressed: () {
-                          showpopUp(
-                              context, productProvider.allProducts[index]);
-                        },
-                      ),
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            productProvider.allProducts[index].name.toString(),
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Text(
-                              "\$ " +
-                                  productProvider.allProducts[index].price
-                                      .toString(),
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else
-                  return Container();
-              }),
-        ),
-      ),
-    );
-  }
-
-  Widget popularfooditems(item, productProvider) {
-    return ScaleTransition(
-      scale: scaleAnimation,
-      child: Container(
-        height: 130,
-        child: Container(
-          height: 100,
-          child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: productProvider.allProducts.length,
-              itemBuilder: (context, index) {
-                if (productProvider.allProducts[index].orderedno >= 5) {
-                  return Container(
-                    height: 150,
-                    width: MediaQuery.of(context).size.width,
-                    child: ListTile(
-                      onTap: () async {
-                        print(productProvider.allProducts[index]);
-                        changeScreen(
-                            context,
-                            Details(
-                                product: productProvider.allProducts[index]));
-
-                        //showItemDetails(context, document);
-                      },
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(110),
-                        child: Container(
-                            width: 20,
-                            height: 20,
-                            child: CachedNetworkImage(
-                              imageUrl: "",
-                              fit: BoxFit.cover,
-                              height: 20,
-                              width: 20,
-                            )),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.add_box,
-                          size: 20,
-                          color: AppTheme.darkerText,
-                        ),
-                        onPressed: () {
-                          showpopUp(
-                              context, productProvider.allProducts[index]);
-                        },
-                      ),
-                      title: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            productProvider.allProducts[index].name.toString(),
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Text(
-                              "\$ " +
-                                  productProvider.allProducts[index].price
-                                      .toString(),
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                } else {
-                  return new Container();
-                }
-              }),
-        ),
-      ),
-    );
-  }
-
   cartBody(user) {
-    final app = Provider.of<AppProvider>(context, listen: false);
     return Column(
       children: <Widget>[
         Padding(
@@ -706,22 +533,15 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
               IconButton(
                   icon: Icon(Icons.clear_all),
                   onPressed: () async {
-                    app.changeLoading();
-                    bool value = await user.removeFromCart(
-                        cartItem: user.userModel.cart);
+                    bool value = await user.removeAllFromCart();
                     if (value) {
                       user.reloadUserModel();
-                      print("Item added to cart");
-                      _key.currentState.showSnackBar(
-                          SnackBar(content: Text("Removed from Cart!")));
-                      app.changeLoading();
+                      showToast(context, "Removed", "Food cart removed", true);
+                      Navigator.of(context).pop();
                       return;
                     } else {
                       print("ITEM WAS NOT REMOVED");
-                      app.changeLoading();
                     }
-                    showToast(context, "Removed", "Food cart removed", true);
-                    Navigator.of(context).pop();
                   })
             ],
           ),
@@ -741,19 +561,15 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
                           key: UniqueKey(),
                           dismissal: SlidableDismissal(
                             onDismissed: (D) async {
-                              app.changeLoading();
                               bool value = await user.removeFromCart(
                                   cartItem: user.userModel.cart[index]);
                               if (value) {
                                 user.reloadUserModel();
-                                print("Item added to cart");
-                                _key.currentState.showSnackBar(SnackBar(
-                                    content: Text("Removed from Cart!")));
-                                app.changeLoading();
+                                showToast(context, "Removed",
+                                    user.userModel.cart[index].name, true);
                                 return;
                               } else {
                                 print("ITEM WAS NOT REMOVED");
-                                app.changeLoading();
                               }
                             },
                             child: Container(
@@ -801,7 +617,8 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
                                     width: 40,
                                     height: 40,
                                     child: CachedNetworkImage(
-                                      imageUrl: "",
+                                      imageUrl:
+                                          user.userModel.cart[index].image,
                                       fit: BoxFit.cover,
                                       height: 20,
                                       width: 20,
@@ -884,9 +701,13 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
                       "Total = ",
                       style: AppTheme.title,
                     ),
-                    Text(
-                      "\$ " + user.userModel.totalCartPrice.toString(),
-                      style: TextStyle(fontStyle: FontStyle.italic),
+                    Consumer<UserProvider>(
+                      builder: (context, provider, _) {
+                        return Text(
+                          "\$ " + user.userModel.totalCartPrice.toString(),
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        );
+                      },
                     ),
                   ],
                 ))
@@ -897,614 +718,14 @@ class _menuState extends State<menu> with SingleTickerProviderStateMixin {
       ],
     );
   }
+}
 
-  showItemspopUp(context, item) {
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => StatefulBuilder(
-              builder: (context, setState) {
-                return ScaleTransition(
-                  scale: scaleAnimation,
-                  child: Material(
-                    type: MaterialType.card,
-                    child: Center(
-                      child: Container(
-                        child: Stack(
-                          children: <Widget>[
-                            Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                height: 500,
-                                width: MediaQuery.of(context).size.width * 0.85,
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: Firestore.instance
-                                      .collection('foodItemslist')
-                                      .orderBy("cost", descending: true)
-                                      .snapshots(),
-                                  builder: (_,
-                                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                                    if (snapshot.hasError)
-                                      return new Text(
-                                          'Error: ${snapshot.error}');
-                                    switch (snapshot.connectionState) {
-                                      case ConnectionState.waiting:
-                                        return Container(
-                                            child: Center(
-                                                child: new Text('Loading...')));
-                                      default:
-                                        return new ListView(
-                                          scrollDirection: Axis.vertical,
-                                          children: snapshot.data.documents
-                                              .map((DocumentSnapshot document) {
-                                            if (document["foodtype"] == item) {
-                                              return ListTile(
-                                                onTap: () {
-                                                  /* showItemDetails(
-                                                      context, document);*/
-                                                },
-                                                leading: ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          110),
-                                                  child: Container(
-                                                      width: 20,
-                                                      height: 20,
-                                                      child: CachedNetworkImage(
-                                                        imageUrl:
-                                                            document["url"],
-                                                        fit: BoxFit.cover,
-                                                        height: 20,
-                                                        width: 20,
-                                                      )),
-                                                ),
-                                                trailing: IconButton(
-                                                  icon: Icon(
-                                                    Icons.add_box,
-                                                    size: 20,
-                                                    color: AppTheme.darkerText,
-                                                  ),
-                                                  onPressed: () {
-                                                    /*   showpopUp1(
-                                                        document["url"],
-                                                        _quantity,
-                                                        document["foodname"],
-                                                        document["foodtype"],
-                                                        _rating,
-                                                        document["cost"],
-                                                        document.documentID,
-                                                        document["duration"]);*/
-                                                  },
-                                                ),
-                                                title: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      document["foodname"]
-                                                          .toString(),
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w600),
-                                                    ),
-                                                    Text(
-                                                      "\$ " +
-                                                          document["cost"]
-                                                              .toString(),
-                                                      style: TextStyle(
-                                                          fontSize: 12),
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-                                            } else {
-                                              return Container();
-                                            }
-                                          }).toList(),
-                                        );
-                                    }
-                                  },
-                                ),
-                                decoration: BoxDecoration(
-                                    color: AppTheme.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          blurRadius: 15,
-                                          spreadRadius: 5,
-                                          color: Color.fromRGBO(0, 0, 0, .05))
-                                    ]),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 10.0, top: 10),
-                                child: IconButton(
-                                  icon: Icon(Icons.clear),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topCenter,
-                              child: Padding(
-                                  padding: const EdgeInsets.only(top: 20),
-                                  child: Text(
-                                    item.toString().toUpperCase(),
-                                    style: AppTheme.title,
-                                  )),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ));
-  }
+Future<bool> onLikeButtonTapped(bool isLiked) async {
+  /// send your request here
+  // final bool success= await sendRequest();
 
-  /* showItemDetails(context, document) {
-    FocusManager.instance.primaryFocus.unfocus();
-    FocusScope.of(context).requestFocus(FocusNode());
-    FocusScope.of(context).unfocus();
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => StatefulBuilder(
-              builder: (context, setState) {
-                return Scaffold(
-                    backgroundColor: AppTheme.notWhite,
-                    body: ScaleTransition(
-                      scale: scaleAnimation,
-                      child: Stack(
-                        children: <Widget>[
-                          ClipPath(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(document["url"]),
-                                      fit: BoxFit.cover,
-                                      colorFilter: ColorFilter.mode(
-                                          Colors.white.withOpacity(0.8),
-                                          BlendMode.lighten))),
-                            ),
-                            clipper: CustomClipperWidget(),
-                          ),
-                          SingleChildScrollView(
-                            physics: BouncingScrollPhysics(),
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 20),
-                              child: Column(
-                                children: <Widget>[
-                                  Align(
-                                    child: IconButton(
-                                        icon: Icon(Icons.arrow_back),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        }),
-                                    alignment: Alignment.topLeft,
-                                  ),
-                                  Container(
-                                    width: 150.0,
-                                    height: 150.0,
-                                    decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            image:
-                                                NetworkImage(document["url"]),
-                                            fit: BoxFit.cover),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(75.0)),
-                                        //borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                              blurRadius: 7.0,
-                                              color: AppTheme.dark_grey)
-                                        ]),
-                                  ),
-                                  SizedBox(height: 20),
-                                  Center(
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        Icon(Icons.camera, size: 20),
-                                        Container(
-                                            margin: EdgeInsets.only(
-                                                left: 4, right: 4),
-                                            child: Text(
-                                                document["foodname"]
-                                                    .toString()
-                                                    .toUpperCase(),
-                                                style: TextStyle(
-                                                    fontSize: 25,
-                                                    fontWeight:
-                                                        FontWeight.bold))),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  _buildInfoCard(context, document),
-                                  Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: _buildDetailCard(context, document),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ));
-              },
-            ));
-  }*/
+  /// if failed, you can do nothing
+  // return success? !isLiked:isLiked;
 
-  /* Widget _buildDetailCard(context, document) {
-    return Container(
-      padding: EdgeInsets.only(top: 50, right: 25),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            document["foodname"].toString().toUpperCase(),
-            style: AppTheme.title,
-          ),
-          SizedBox(
-            height: 2,
-          ),
-          Text(
-            document["foodtype"].toString().toUpperCase(),
-            style: AppTheme.subtitle,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                "Calories:",
-                style: AppTheme.title,
-              ),
-              Text(document["calories"].toString()),
-              SizedBox(
-                width: 20,
-              ),
-              Text(
-                "Calories:",
-                style: AppTheme.title,
-              ),
-              Text(document["calories"].toString()),
-            ],
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                "Time: ",
-                style: AppTheme.title,
-              ),
-              Text(document["duration"].toString()),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                "(Extra time ",
-                style: AppTheme.subtitle,
-              ),
-              Text(
-                "Depends on Quantities).",
-                style: TextStyle(fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                "Ingredients: ",
-                style: AppTheme.title,
-              ),
-              Text(document["Ingrediant"].toString()),
-            ],
-          ),
-          SizedBox(
-            height: 30,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  "Reviews: ",
-                  style: AppTheme.title,
-                ),
-              ),
-              document["rating"] == null
-                  ? Text("0")
-                  : SmoothStarRating(
-                      allowHalfRating: false,
-                      starCount: 5,
-                      isReadOnly: true,
-                      rating: document["rating"] / document["ratingno"],
-                      size: 20.0,
-                      color: AppTheme.dark_grey,
-                      borderColor: AppTheme.dark_grey,
-                    ),
-            ],
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Text(
-              document["description"],
-              style: TextStyle(
-                wordSpacing: 1,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: RaisedButton(
-                elevation: 5,
-                shape: new RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(30.0),
-                ),
-                onPressed: () {
-                  showpopUp1(
-                      document["url"],
-                      1,
-                      document["foodname"],
-                      document["foodtype"],
-                      document["rating"],
-                      document["cost"],
-                      document["foodname"],
-                      document["duration"]);
-                },
-                color: AppTheme.dark_grey,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.fastfood,
-                      color: AppTheme.white,
-                    ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Text(
-                      "Order now".toUpperCase(),
-                      style: TextStyle(color: AppTheme.notWhite),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(18.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "Comments",
-                  style: AppTheme.title,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.0),
-            child: StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance
-                  .collection('foodItemslist')
-                  .document(document["foodname"])
-                  .collection("reviews")
-                  .snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError)
-                  return new Text('Error: ${snapshot.error}');
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return Center(child: new Text('Loading...'));
-                  default:
-                    if ((snapshot.hasData)) {
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        controller: scrollController,
-                        physics: AlwaysScrollableScrollPhysics(),
-                        itemCount: snapshot.data.documents.length,
-                        scrollDirection: Axis.vertical,
-                        itemBuilder: (context, position) {
-                          return Card(
-                            margin: EdgeInsets.only(bottom: 30),
-                            elevation: 1,
-                            child:
-                                _commentsUi(snapshot.data.documents[position]),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0)),
-                          );
-                        },
-                      );
-                    } else {
-                      return SizedBox();
-                    }
-                }
-              },
-            ),
-          )
-        ],
-      ),
-    );
-  }*/
-
-  Widget _buildInfoCard(context, document) {
-    return Column(
-      children: <Widget>[
-        Container(
-          padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-          child: Card(
-            elevation: 5.0,
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 16.0, bottom: 16.0, right: 10.0, left: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      new Text(
-                        'Reviews',
-                        style: new TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: new Text(
-                          (document["rating"] / document["ratingno"])
-                              .toString(),
-                          style: new TextStyle(
-                              fontSize: 18.0,
-                              color: Color(0Xffde6262),
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
-                  new Column(
-                    children: <Widget>[
-                      new Text(
-                        'Orders',
-                        style: new TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: new Text(
-                          document["orderedno"].toString(),
-                          style: new TextStyle(
-                              fontSize: 18.0,
-                              color: Color(0Xffde6262),
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  ),
-                  new Column(
-                    children: <Widget>[
-                      new Text(
-                        'Following',
-                        style: new TextStyle(
-                            fontSize: 18.0,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6.0),
-                        child: new Text(
-                          '150',
-                          style: new TextStyle(
-                              fontSize: 18.0,
-                              color: Color(0Xffde6262),
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _commentsUi(snapsort) {
-    return ListTile(
-      leading: Container(
-        height: 50,
-        width: 50,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(110),
-          child: Container(
-              child: CachedNetworkImage(
-            imageUrl: snapsort["url"],
-            fit: BoxFit.cover,
-            height: 10,
-            width: 10,
-          )),
-        ),
-      ),
-      title: Container(
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  snapsort.documentID,
-                  style: AppTheme.subtitle,
-                ),
-                Text(
-                  snapsort["date"],
-                  style: AppTheme.subtitle,
-                )
-              ],
-            ),
-            Container(
-              child: Column(
-                children: [
-                  Text(
-                    snapsort["title"].toString().toUpperCase(),
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  Text(
-                    "\"" + snapsort["comments"] + "\"",
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
+  return !isLiked;
 }

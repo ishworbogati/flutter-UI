@@ -4,49 +4,36 @@ import '../models/products.dart';
 
 class ProductServices {
   String collection = "products";
-  Firestore _firestore = Firestore.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<ProductModel>> getProducts() async =>
-      _firestore.collection("fooditems").getDocuments().then((result) {
+      _firestore.collection("fooditems").get().then((result) {
         List<ProductModel> products = [];
-        for (DocumentSnapshot product in result.documents) {
-          products.add(ProductModel.fromSnapshot(product));
-        }
+        result.docs.forEach((element) {
+          products.add(ProductModel.fromSnapshot(element));
+        });
         return products;
       });
-  Future<List<dynamic>> getListProducts() async =>
-      _firestore.collection("fooditems").getDocuments().then((result) {
-        List<dynamic> products = [];
-        for (DocumentSnapshot product in result.documents) {
-          products = product.data as List;
-          print(products);
-        }
-        return products;
-      });
-
-  void likeOrDislikeProduct({String id, List<String> userLikes}) {
-    _firestore
-        .collection("fooditems")
-        .document(id)
-        .updateData({"userLikes": userLikes});
-  }
+/*  void likeOrDislikeProduct({String id, List<String> userLikes}) {
+    _firestore.collection("fooditems").doc(id).update({"userLikes": userLikes});
+  }*/
 
   Future<List<ProductModel>> getAllProducts({String category}) async =>
-      _firestore.collection("fooditems").getDocuments().then((result) {
+      _firestore.collection("fooditems").get().then((result) {
         List<ProductModel> products = [];
-        for (DocumentSnapshot product in result.documents) {
-          products.add(ProductModel.fromSnapshot(product));
-        }
+        result.docs.forEach((element) {
+          products.add(ProductModel.fromSnapshot(element));
+        });
         return products;
       });
   Future<List<ProductModel>> getProductsOfCategory({String category}) async =>
       _firestore
           .collection("fooditems")
           .where("category", isEqualTo: category)
-          .getDocuments()
+          .get()
           .then((result) {
         List<ProductModel> products = [];
-        for (DocumentSnapshot product in result.documents) {
+        for (DocumentSnapshot product in result.docs) {
           //   print(product.data);
           products.add(ProductModel.fromSnapshot(product));
         }
@@ -61,11 +48,10 @@ class ProductServices {
         .orderBy("FOODNAME")
         .startAt([searchKey])
         .endAt([searchKey + '\uf8ff'])
-        .getDocuments()
+        .get()
         .then((result) {
           List<ProductModel> products = [];
-          for (DocumentSnapshot product in result.documents) {
-            print(product.data);
+          for (DocumentSnapshot product in result.docs) {
             products.add(ProductModel.fromSnapshot(product));
           }
           return products;

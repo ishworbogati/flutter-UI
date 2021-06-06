@@ -7,7 +7,8 @@ class CartItemModel {
   static const PRICE = "price";
   static const INITTIME = "inittime";
   static const COOKTIME = "cooktime";
-  static const TOTAL_RESTAURANT_SALES = "totalRestaurantSale";
+  static const ORDEREDNO = "orderedno";
+  static const DISCOUNT = "discount";
 
   String _id;
   String _name;
@@ -15,9 +16,10 @@ class CartItemModel {
   String _productId;
   int _inittime;
   int _cooktime;
-  int _totalRestaurantSale;
+  int _orderedno;
   int _quantity;
   int _price;
+  int _discount;
 
   //  getters
   String get id => _id;
@@ -34,7 +36,8 @@ class CartItemModel {
 
   int get price => _price;
 
-  int get totalRestaurantSale => _totalRestaurantSale;
+  int get orderedno => _orderedno;
+  int get dis => _discount;
 
   int get quantity => _quantity;
 
@@ -45,9 +48,10 @@ class CartItemModel {
     _productId = data[PRODUCT_ID];
     _price = data[PRICE];
     _quantity = data[QUANTITY];
-    _totalRestaurantSale = data[TOTAL_RESTAURANT_SALES];
+    _orderedno = data[ORDEREDNO];
     _inittime = data[INITTIME];
     _cooktime = data[COOKTIME];
+    _discount = data[DISCOUNT];
   }
 
   Map toMap() => {
@@ -59,6 +63,7 @@ class CartItemModel {
         PRICE: _price,
         INITTIME: _inittime,
         COOKTIME: _cooktime,
-        TOTAL_RESTAURANT_SALES: _totalRestaurantSale
+        ORDEREDNO: _orderedno,
+        DISCOUNT: _discount
       };
 }

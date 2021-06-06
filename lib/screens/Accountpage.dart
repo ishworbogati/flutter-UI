@@ -10,6 +10,8 @@ import 'package:foodorderingsys/providers/product.dart';
 import 'package:foodorderingsys/providers/user.dart';
 import 'package:foodorderingsys/screens/logoutPopOut.dart';
 import 'package:foodorderingsys/screens/popular_dishes.dart';
+import 'package:foodorderingsys/screens/profile.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class Account extends StatefulWidget {
@@ -54,7 +56,7 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
                             onPressed: () async {
                               showDialog(
                                 context: context,
-                                builder: (_) => FunkyOverlay(),
+                                builder: (_) => profile(),
                               );
                             }),
                       ),
@@ -164,7 +166,14 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
                     itemCount: user.orders.length,
                     itemBuilder: (_, index) {
                       OrderModel _order = user.orders[index];
-                      return MaterialTile(_order);
+                      var date =
+                          DateFormat('yyyy-MM-dd').format(DateTime.now());
+                      if (DateTime.parse(_order.date)
+                              .compareTo(DateTime.parse(date)) ==
+                          0) {
+                        return MaterialTile(_order);
+                      } else
+                        return Container();
                     },
                   ),
                 ),
@@ -268,10 +277,9 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
                                       final user = Provider.of<UserProvider>(
                                           context,
                                           listen: false);
-                                      user.paid(user.user.uid);
+                                      user.paid(user.user.uid, "In hand");
                                       showToast(context, "Payment Sucessful",
                                           user.Total.toString(), true);
-                                      // appstate.setpay();
                                       Navigator.pop(context);
                                     },
                                     child: Container(
@@ -319,7 +327,7 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
                                   ),
                                   FlatButton(
                                     onPressed: () {
-                                      //  _initpayment(appstate, total);
+                                      _initpayment();
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -350,18 +358,14 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
                                       height: 80,
                                       width: 200,
                                       child: Image.asset(
-                                        "assets/images/esewa.jpg",
+                                        "assets/images/logo_dark.png",
                                         fit: BoxFit.fitWidth,
                                       ),
                                     ),
                                   ),
                                   FlatButton(
                                     onPressed: () {
-                                      /* appstate.getsnap("Khalti");
-                                      showToast(context, "Payment Sucessful",
-                                          total.toString(), true);
-                                      appstate.setpay();
-                                      Navigator.pop(context);*/
+                                      _initpayment();
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -441,29 +445,27 @@ class _AccountState extends State<Account> with SingleTickerProviderStateMixin {
             ));
   }
 
-  /*_initpayment(appstate, amount) async {
-    ESewaConfiguration _configuration = ESewaConfiguration(
+  _initpayment() async {
+    final user = Provider.of<UserProvider>(context, listen: false);
+    /*ESewaConfiguration _configuration = ESewaConfiguration(
         clientID: "JB0BBQ4aD0UqIThFJwAKBgAXEUkEGQUBBAwdOgABHD4DChwUAB0R",
         secretKey: "BhwIWQQADhIYSxILExMcAgFXFhcOBwAKBgAXEQ==",
         environment: ESewaConfiguration.ENVIRONMENT_TEST //ENVIRONMENT_LIVE
         );
     ESewaPayment _payment = ESewaPayment(
-        amount: amount,
+        amount: user.Total,
         productName: "food",
-        productID: "asdas",
+        productID: user.userModel.id,
         callBackURL: "http://www.example.com");
     ESewaPnp _eSewaPnp = ESewaPnp(configuration: _configuration);
-    final _res = await _eSewaPnp.initPayment(payment: _payment);
-    _res.fold((l) {
-      print("unsucess");
-    }, (r) {
-      print("sucess");
-      appstate.getsnap("esewa");
-      showToast(context, "Payment Sucessful", total.toString(), true);
-      appstate.setpay();
-      Navigator.pop(context);
-    });
-  }*/
+    try {
+      final _res = await _eSewaPnp.initPayment(payment: _payment);
+      showToast(context, "Payment Sucessful", user.Total.toString(), true);
+    } catch (e) {
+      showToast(context, "Payment unSucessful", user.Total.toString(), true);
+    }*/
+    Navigator.pop(context);
+  }
 }
 
 class MaterialTile extends StatefulWidget {
@@ -508,7 +510,7 @@ class _MaterialTileState extends State<MaterialTile> {
           showBadge: widget.order.paid == 0 ? false : true,
           alignment: Alignment.center,
           badgeColor: AppTheme.dark_grey,
-          position: BadgePosition.topLeft(top: 10, left: 0),
+          position: BadgePosition.topEnd(top: 10, end: 0),
           badgeContent: Text(
             "Paid",
             style: TextStyle(fontSize: 10, color: AppTheme.white),
@@ -522,7 +524,7 @@ class _MaterialTileState extends State<MaterialTile> {
                 borderRadius: BorderRadius.circular(110),
                 child: Container(
                     child: CachedNetworkImage(
-                  imageUrl: "",
+                  imageUrl: widget.order.cart[0].image,
                   fit: BoxFit.cover,
                   height: 10,
                   width: 10,

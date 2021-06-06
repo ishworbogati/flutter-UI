@@ -37,12 +37,20 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:438722206001:android:7435bb584be6de3a797810",
+        "mobilesdk_app_id": "1:438722206001:android:d595aaf718099f03797810",
         "android_client_info": {
           "package_name": "com.example.foodorderingsys"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "438722206001-6m8j8ij104tgevftd99jtpcl9ggetc7p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.foodorderingsys",
+            "certificate_hash": "2a617c5ee7274eacca90cb224760b5ca87768e01"
+          }
+        },
         {
           "client_id": "438722206001-fqoauq6gr73schfvohsrg37gdc8eh6bd.apps.googleusercontent.com",
           "client_type": 3
@@ -66,9 +74,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:438722206001:android:d9d42b526b5ae937797810",
+        "mobilesdk_app_id": "1:438722206001:android:86bca1156259d29f797810",
         "android_client_info": {
-          "package_name": "io.fireship.lessonapp"
+          "package_name": "com.example.hotelstaffapp"
         }
       },
       "oauth_client": [

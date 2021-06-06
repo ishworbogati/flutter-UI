@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodorderingsys/helpers/style.dart';
 import 'package:foodorderingsys/models/products.dart';
-import 'package:foodorderingsys/providers/product.dart';
-import 'package:provider/provider.dart';
 
 import 'custom_text.dart';
 
@@ -13,12 +11,10 @@ class ProductWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productProvider = Provider.of<ProductProvider>(context);
-
     return Padding(
       padding: const EdgeInsets.only(left: 4, right: 4, top: 4, bottom: 10),
       child: Container(
-        height: 110,
+        height: 100,
         decoration: BoxDecoration(
             color: white,
             borderRadius: BorderRadius.circular(20),
@@ -31,7 +27,7 @@ class ProductWidget extends StatelessWidget {
 //            height: 160,
         child: Row(
           children: <Widget>[
-            /*    Container(
+            Container(
               width: 140,
               height: 120,
               child: ClipRRect(
@@ -44,7 +40,7 @@ class ProductWidget extends StatelessWidget {
                   fit: BoxFit.fill,
                 ),
               ),
-            ),*/
+            ),
             Expanded(
               child: Column(
                 children: <Widget>[
@@ -54,7 +50,7 @@ class ProductWidget extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: CustomText(
-                          text: product.name,
+                          text: product.name.toString().toUpperCase(),
                         ),
                       ),
                       Padding(
@@ -141,7 +137,7 @@ class ProductWidget extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: CustomText(
-                          text: "\$${product.price / 100}",
+                          text: "\$${product.price}",
                           weight: FontWeight.bold,
                         ),
                       ),

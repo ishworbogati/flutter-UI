@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:foodorderingsys/helpers/AppTheme.dart';
 import 'package:foodorderingsys/helpers/beziercontainer.dart';
+import 'package:foodorderingsys/helpers/info.dart';
 import 'package:foodorderingsys/helpers/screen_navigation.dart';
 import 'package:foodorderingsys/helpers/style.dart';
 import 'package:foodorderingsys/providers/product.dart';
@@ -37,8 +39,9 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
+
     final authProvider = Provider.of<UserProvider>(context);
-    //Provider.of<ProductProvider>(context);
     return Scaffold(
       key: _key,
       backgroundColor: white,
@@ -112,13 +115,10 @@ class _LoginScreenState extends State<LoginScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Container(
-              padding: EdgeInsets.only(top: 160.0),
+              height: SizeConfig.blockSizeVertical * 40,
+              padding: EdgeInsets.only(top: 30.0),
               child: Center(
-                child: Icon(
-                  Icons.local_hotel,
-                  color: AppTheme.dark_grey,
-                  size: 40.0,
-                ),
+                child: Image.asset("assets/images/logo.png"),
               ),
             ),
             Container(
@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen>
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 100.0),
+              padding: const EdgeInsets.only(top: 50.0),
               child: new Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen>
                       child: new Container(
                         padding: const EdgeInsets.symmetric(
                           vertical: 20.0,
-                          horizontal: 80.0,
+                          horizontal: 100.0,
                         ),
                         child: new Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -195,10 +195,196 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
                   ),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  _buildSignInWithText(),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  Align(
+                      alignment: FractionalOffset(0.5, 0.95),
+                      child: _googleSignInButton()),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  _facebookButton(),
                 ],
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignInWithText() {
+    return Column(
+      children: <Widget>[
+        Text(
+          '- OR -',
+          style: TextStyle(
+            fontFamily: 'OpenSans',
+            color: Colors.black,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 20.0),
+        Text(
+          'Sign in with',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'OpenSans',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _googleSignInButton() {
+    final authProvider = Provider.of<UserProvider>(context, listen: false);
+    final productProvider =
+        Provider.of<ProductProvider>(context, listen: false);
+    return ButtonTheme(
+      minWidth: 175,
+      child: FlatButton(
+        color: AppTheme.notWhite,
+        splashColor: Colors.white,
+        onPressed: () async {
+          if (!await authProvider.googleSignInButton()) {
+            return;
+          }
+          productProvider.loadProducts();
+          authProvider.clearController();
+          changeScreenReplacement(context, hotel_home());
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image(
+                  image: AssetImage("assets/images/google_logo.png"),
+                  height: 35.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  'Google',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    color: AppTheme.dark_grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  var smsCode;
+
+  TextEditingController _codeController = TextEditingController();
+  Widget _facebookButton() {
+    final authProvider = Provider.of<UserProvider>(context, listen: false);
+
+    return ButtonTheme(
+      minWidth: SizeConfig.blockSizeHorizontal * 2,
+      child: FlatButton(
+        color: AppTheme.notWhite,
+        splashColor: Colors.white,
+        onPressed: () async {
+          await FirebaseAuth.instance.verifyPhoneNumber(
+            phoneNumber: "+977 9840360131",
+            verificationCompleted: (PhoneAuthCredential credential) {
+              /*  _firestore.collection('users').doc(result.user.uid).set({
+                'firstname': firstname.text,
+                'lastname': lastname.text,
+                'email': email.text,
+                'phone': phone.text,
+                'uid': result.user.uid,
+                "likedFood": [],
+                "cart": [],
+                "photo": ""
+              });*/
+            },
+            verificationFailed: (FirebaseAuthException e) {
+              print(e);
+            },
+            codeSent: (String verificationId, int resendToken) {
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => AlertDialog(
+                        title: Text("Enter SMS Code"),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            TextField(
+                              controller: _codeController,
+                            ),
+                          ],
+                        ),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text("Done"),
+                            textColor: Colors.white,
+                            color: Colors.redAccent,
+                            onPressed: () {
+                              smsCode = _codeController.text.trim();
+                              FirebaseAuth auth = FirebaseAuth.instance;
+
+                              smsCode = _codeController.text.trim();
+
+                              var credential = PhoneAuthProvider.credential(
+                                  verificationId: verificationId,
+                                  smsCode: smsCode);
+
+                              print(credential.providerId);
+                            },
+                          )
+                        ],
+                      ));
+            },
+            timeout: Duration(seconds: 60),
+            codeAutoRetrievalTimeout: (String verificationId) {
+              verificationId = verificationId;
+              print(verificationId);
+              print("Timout");
+            },
+          );
+          // authProvider.facebookSignInButton();
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image(
+                  image: AssetImage("assets/images/facebook_logo.png"),
+                  height: 35.0),
+              Padding(
+                padding: const EdgeInsets.only(left: 20),
+                child: Text(
+                  'Facebook',
+                  style: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    color: AppTheme.dark_grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -390,8 +576,6 @@ class _LoginScreenState extends State<LoginScreen>
                           decoration: new InputDecoration(hintText: "E-mail"),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
-                            Pattern pattern =
-                                r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                             if (value.isEmpty) {
                               return 'Please enter your e-mail';
                             } else if (RegExp(
@@ -415,6 +599,22 @@ class _LoginScreenState extends State<LoginScreen>
                             }
                             return null;
                           }),
+                      Container(
+                        alignment: Alignment.centerRight,
+                        child: FlatButton(
+                          onPressed: () =>
+                              print('Forgot Password Button Pressed'),
+                          padding: EdgeInsets.only(right: 0.0),
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'OpenSans',
+                            ),
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -452,17 +652,65 @@ class _LoginScreenState extends State<LoginScreen>
 
   regdirect() async {
     final authProvider = Provider.of<UserProvider>(context, listen: false);
+
     final productProvider =
         Provider.of<ProductProvider>(context, listen: false);
     {
-      if (!await authProvider.signUp()) {
-        _key.currentState
-            .showSnackBar(SnackBar(content: Text("Resgistration failed!")));
-        return;
-      }
-      productProvider.loadProducts();
-      authProvider.clearController();
-      changeScreenReplacement(context, hotel_home());
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: "+977 9840360131",
+        verificationCompleted: (PhoneAuthCredential credential) {},
+        verificationFailed: (FirebaseAuthException e) {
+          print(e);
+        },
+        codeSent: (String verificationId, int resendToken) {
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => AlertDialog(
+                    title: Text("Enter SMS Code"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        TextField(
+                          controller: _codeController,
+                        ),
+                      ],
+                    ),
+                    actions: <Widget>[
+                      FlatButton(
+                        child: Text("Done"),
+                        textColor: Colors.white,
+                        color: Colors.redAccent,
+                        onPressed: () async {
+                          smsCode = _codeController.text.trim();
+                          FirebaseAuth auth = FirebaseAuth.instance;
+
+                          smsCode = _codeController.text.trim();
+
+                          var credential = PhoneAuthProvider.credential(
+                              verificationId: verificationId, smsCode: smsCode);
+                          if (!await authProvider.signUp(context)) {
+                            _key.currentState.showSnackBar(SnackBar(
+                                content: Text("Registration failed!!")));
+                            return;
+                          } else {
+                            productProvider.loadProducts();
+                            authProvider.clearController();
+
+                            changeScreenReplacement(context, hotel_home());
+                          }
+                        },
+                      )
+                    ],
+                  ));
+        },
+        timeout: Duration(seconds: 60),
+        codeAutoRetrievalTimeout: (String verificationId) {
+          verificationId = verificationId;
+          print(verificationId);
+          print("Timout");
+        },
+      );
     }
   }
 }

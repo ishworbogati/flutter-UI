@@ -25,7 +25,6 @@ class AppTheme {
   static const Color flatOrange = const Color(0xFFFF9233);
   static const Color productbg = Color(0xffF4F7FA);
 
-
   static const TextTheme textTheme = TextTheme(
     display1: display1,
     headline: headline,
@@ -60,7 +59,7 @@ class AppTheme {
     // h6 -> title
     fontFamily: fontName,
     fontWeight: FontWeight.bold,
-    fontSize: 16,
+    fontSize: 20,
     letterSpacing: 0.18,
     color: darkerText,
   );
@@ -78,7 +77,7 @@ class AppTheme {
     // body1 -> body2
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
-    fontSize: 14,
+    fontSize: 16,
     letterSpacing: 0.2,
     color: darkText,
   );
@@ -100,7 +99,32 @@ class AppTheme {
     letterSpacing: 0.2,
     color: white, // was lightText
   );
-  static const TextStyle tabtext = TextStyle(
-      fontSize: 13, letterSpacing: 0.3, fontWeight: FontWeight.w700);
+  static const TextStyle tabtext =
+      TextStyle(fontSize: 13, letterSpacing: 0.3, fontWeight: FontWeight.w700);
+}
 
+class Styles {
+  static ThemeData themeData(bool isDarkTheme, BuildContext context) {
+    return ThemeData(
+      primarySwatch: Colors.red,
+      primaryColor: isDarkTheme ? Color(0xFF17262A) : Colors.white,
+      backgroundColor: isDarkTheme ? Color(0xFF213333) : Color(0xFFEDF0F2),
+      indicatorColor: isDarkTheme ? Color(0xff0E1D36) : Color(0xffCBDCF8),
+      buttonColor: isDarkTheme ? Color(0xff3B3B3B) : Color(0xffF1F5FB),
+      hintColor: isDarkTheme ? Color(0xff280C0B) : Color(0xffEECED3),
+      highlightColor: isDarkTheme ? Color(0xff372901) : Color(0xffFCE192),
+      hoverColor: isDarkTheme ? Color(0xff3A3A3B) : Color(0xff4285F4),
+      focusColor: isDarkTheme ? Color(0xff0B2512) : Color(0xffA8DAB5),
+      disabledColor: Colors.grey,
+      textSelectionColor: isDarkTheme ? Colors.white : Colors.black,
+      cardColor: isDarkTheme ? Color(0xFF151515) : Colors.white,
+      canvasColor: isDarkTheme ? Colors.black : Colors.grey[50],
+      brightness: isDarkTheme ? Brightness.dark : Brightness.light,
+      buttonTheme: Theme.of(context).buttonTheme.copyWith(
+          colorScheme: isDarkTheme ? ColorScheme.dark() : ColorScheme.light()),
+      appBarTheme: AppBarTheme(
+        elevation: 0.0,
+      ),
+    );
+  }
 }

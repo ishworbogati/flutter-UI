@@ -1,41 +1,27 @@
 import 'package:flutter/material.dart';
 
-enum SearchBy{PRODUCTS, RESTAURANTS}
-
-class AppProvider with ChangeNotifier{
+class AppProvider with ChangeNotifier {
   bool isLoading = false;
-  SearchBy search = SearchBy.PRODUCTS;
-  String filterBy = "Products";
   int totalPrice = 0;
   int priceSum = 0;
   int quantitySum = 0;
 
-  void changeLoading(){
+  void changeLoading() {
     isLoading = !isLoading;
     notifyListeners();
   }
 
-  void changeSearchBy({SearchBy newSearchBy}){
-    search = newSearchBy;
-    if(newSearchBy == SearchBy.PRODUCTS){
-      filterBy = "Products";
-    }else{
-      filterBy = "Restaurants";
-    }
-    notifyListeners();
-  }
-
-  addPrice({int newPrice}){
+  addPrice({int newPrice}) {
     priceSum += newPrice;
     notifyListeners();
   }
 
-  addQuantity({int newQuantity}){
+  addQuantity({int newQuantity}) {
     quantitySum += newQuantity;
     notifyListeners();
   }
 
-  getTotalPrice(){
+  getTotalPrice() {
     print("THE TOTAL SUM IS: $priceSum");
     print("THE TOTAL SUM IS: $priceSum");
     print("THE TOTAL SUM IS: $priceSum");
@@ -44,7 +30,6 @@ class AppProvider with ChangeNotifier{
     print("THE QUANTITY SUM IS: $quantitySum");
     print("THE QUANTITY SUM IS: $quantitySum");
     print("THE QUANTITY SUM IS: $quantitySum");
-
 
     totalPrice = priceSum * quantitySum;
     print("THE TOTAL AMOUNT IS: $totalPrice");
@@ -53,9 +38,6 @@ class AppProvider with ChangeNotifier{
     print("THE TOTAL AMOUNT IS: $totalPrice");
     print("THE TOTAL AMOUNT IS: $totalPrice");
 
-
-
     notifyListeners();
   }
-
 }
